@@ -23,18 +23,21 @@ from utils import normalize_domain
 
 load_dotenv()
 
-VISIBLE_BASE_URL = os.environ.get("VISIBLE_BASE_URL", "https://api.visible.vc")
-VISIBLE_TOKEN = os.environ.get("VISIBLE_ACCESS_TOKEN")
-VISIBLE_COMPANY_ID = os.environ.get("VISIBLE_COMPANY_ID")
+def _get_visible_token() -> str:
+    token = os.environ.get("VISIBLE_ACCESS_TOKEN")
+    if not token:
+        raise ValueError("VISIBLE_ACCESS_TOKEN is not set.")
+    return token
 
-if not VISIBLE_TOKEN:
-    raise ValueError(
-        "VISIBLE_ACCESS_TOKEN is not set. Please add it to your environment variables."
-    )
-if not VISIBLE_COMPANY_ID:
-    raise ValueError(
-        "VISIBLE_COMPANY_ID is not set. Please add it to your environment variables."
-    )
+def _get_visible_company_id() -> str:
+    company_id = os.environ.get("VISIBLE_COMPANY_ID")
+    if not company_id:
+        raise ValueError("VISIBLE_COMPANY_ID is not set.")
+    return company_id
+
+VISIBLE_BASE_URL = os.environ.get("VISIBLE_BASE_URL", "https://api.visible.vc")
+VISIBLE_TOKEN = _get_visible_token()
+VISIBLE_COMPANY_ID = _get_visible_company_id()
 
 # Applied to every outbound Visible request to prevent indefinite hangs.
 _REQUEST_TIMEOUT = 30  # seconds
