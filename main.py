@@ -33,7 +33,8 @@ def main() -> None:
     logging.info("=" * 20)
     logging.info("Phase 1: Extracting portfolio metrics from Visible...")
     logging.info("=" * 20)
-    visible_data = get_bulk_portfolio_metrics()
+    visible_failures: list[str] = []
+    visible_data = get_bulk_portfolio_metrics(visible_failures)
 
     if not visible_data:
         logging.warning("No portfolio data returned from Visible. Aborting pipeline.")
@@ -57,6 +58,16 @@ def main() -> None:
     logging.info("Phase 3: Pushing metric updates to Affinity...")
     logging.info("=" * 20)
     push_to_affinity(affinity_session, affinity_data)
+
+    # Everything that was extracted successfully has now been pushed. If any
+    # company's Visible data was incomplete, fail the run so it shows up as a
+    # failed invocation instead of a silent "Succeeded".
+    if visible_failures:
+        raise RuntimeError(
+            f"Pipeline finished, but Visible extraction failed for "
+            f"{len(visible_failures)} item(s); those companies were not fully "
+            f"updated in Affinity: {visible_failures}"
+        )
 
 
 if __name__ == "__main__":
