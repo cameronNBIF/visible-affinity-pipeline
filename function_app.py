@@ -12,7 +12,10 @@ def visible_affinity_pipeline(myTimer: func.TimerRequest) -> None:
 
     try:
         main()
-    except Exception as e:
-        logging.error(f"An error occurred during pipeline execution: {e}")
+    except Exception:
+        logging.exception("An error occurred during pipeline execution.")
+        # Re-raise so the invocation is recorded as Failed in Azure rather than
+        # Succeeded, making problems visible in the portal and to alerts.
+        raise
 
     logging.info('Python timer trigger function executed.')
